@@ -23,7 +23,7 @@ services:
       POSTGRES_USER: ${PG_USER:-authentik}
       POSTGRES_DB: ${PG_DB:-authentik}
     env_file:
-      - stack.env
+      - env.env
     networks:
       - reverse_proxy
 
@@ -58,7 +58,7 @@ services:
       - ./media:/media
       - ./custom-templates:/templates
     env_file:
-      - stack.env
+      - env.env
     ports:
       - "${COMPOSE_PORT_HTTP:-9000}:9000"
       - "${COMPOSE_PORT_HTTPS:-9443}:9443"
@@ -97,7 +97,7 @@ services:
       - ./certs:/certs
       - ./custom-templates:/templates
     env_file:
-      - stack.env
+      - env.env
     depends_on:
       - postgresql
       - redis
@@ -152,7 +152,7 @@ services:
     ports:
       - 8079:8079
     networks:
-     - reverse_proxy
+      - reverse_proxy
     restart: unless-stopped
 
   sonarr:
@@ -170,7 +170,7 @@ services:
     ports:
       - 8989:8989
     networks:
-     - reverse_proxy
+      - reverse_proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.tls=true"
@@ -194,7 +194,7 @@ services:
     ports:
       - 7878:7878
     networks:
-     - reverse_proxy
+      - reverse_proxy
 
   plex:
     container_name: plex
@@ -219,7 +219,7 @@ services:
       -  32414:32414/udp 
       -  32469:32469
     networks:
-     - reverse_proxy
+      - reverse_proxy
 
 ###############################################################
 # Portainer
@@ -247,7 +247,7 @@ services:
 # Traefik
 ###############################################################
 
-traefik:
+  traefik:
     container_name: traefik
     image: traefik:latest
     restart: unless-stopped
@@ -271,7 +271,9 @@ traefik:
       - 80:80
       - 443:443
     networks:
-     - reverse_proxy
+      - reverse_proxy
+    env_file:
+      - env.env
     environment:
       - CF_API_EMAIL=${EMAIL}
       - CF_API_KEY=${KEY}
