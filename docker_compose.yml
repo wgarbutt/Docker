@@ -1,0 +1,363 @@
+---
+version: "3.4"
+services:
+
+###############################################################
+# Authentik 
+###############################################################
+
+  postgresql:
+    image: docker.io/library/postgres:12-alpine
+    container_name: authentik-postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_DB: ${PG_DB:-authentik}
+    env_file:
+      - stack.env
+    networks:
+      - reverse_proxy
+
+  redis:
+    image: docker.io/library/redis:alpine
+    container_name: authentik_redis
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis:/data
+    networks:
+      - reverse_proxy
+
+  server:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
+    container_name: authentik_server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    env_file:
+      - stack.env
+    ports:
+      - "${COMPOSE_PORT_HTTP:-9000}:9000"
+      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+    networks:
+      - reverse_proxy
+    depends_on:
+      - postgresql
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik.rule=Host(`authentik.willg.link`)"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.tls=true"
+      - "traefik.http.routers.authentik.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.authentik-outpost.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.willg.link`) && PathPrefix(`/outpost.goauthentik.io/`)"
+      - "traefik.http.routers.authentik-outpost.tls=true"
+      - "traefik.http.routers.authentik-outpost.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.authentik.service=authentik-svc"
+      - "traefik.http.services.authentik-svc.loadBalancer.server.port=9000"
+
+  worker:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
+    container_name: authentik_worker
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./media:/media
+      - ./certs:/certs
+      - ./custom-templates:/templates
+    env_file:
+      - stack.env
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - reverse_proxy
+
+
+###############################################################
+# Dashy
+###############################################################
+
+  dashy:
+    image: lissy93/dashy
+    container_name: dashy
+    volumes:
+      - /home/will/dashy/dashy-conf.yml:/app/user-data/conf.yml
+    ports:
+      - 8090:8080
+    networks:
+      - reverse_proxy    
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', '/app/services/healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashy.tls=true"
+      - "traefik.http.routers.dashy.entrypoints=websecure"
+      - "traefik.http.routers.dashy.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
+      - "traefik.http.routers.dashy.middlewares=middlewares-authentik@docker"
+
+###############################################################
+# Media Stack
+###############################################################
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=NZ
+    volumes:
+      - sabnzbdconfig:/config
+      - downloads:/downloads 
+    ports:
+      - 8079:8079
+    networks:
+     - reverse_proxy
+    restart: unless-stopped
+
+  sonarr:
+    container_name: sonarr
+    image: linuxserver/sonarr:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=NZ 
+    volumes:
+      - sonarrconfig:/config 
+      - tv:/TV 
+      - downloads:/downloads 
+    ports:
+      - 8989:8989
+    networks:
+     - reverse_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.willg.link`)"
+      - "traefik.http.routers.sonarr.middlewares=middlewares-authentik@docker"
+      - "traefik.http.routers.sonarr.service=sonarr-media"
+  radarr:
+    container_name: radarr
+    image: linuxserver/radarr:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=NZ 
+    volumes:
+      - radarrconfig:/config 
+      - movies:/Movies 
+      - downloads:/downloads 
+    ports:
+      - 7878:7878
+    networks:
+     - reverse_proxy
+
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=NZ 
+    volumes:
+      - plexconfig:/config 
+      - plexconfig:/transcode 
+      - tv:/tv 
+      - movies:/movies 
+    ports:
+      -  32400:32400 
+      -  5353:5353/udp 
+      -  8324:8324 
+      -  32410:32410/udp 
+      -  32412:32412/udp 
+      -  32413:32413/udp 
+      -  32414:32414/udp 
+      -  32469:32469
+    networks:
+     - reverse_proxy
+
+###############################################################
+# Portainer
+###############################################################
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    networks:
+      - reverse_proxy    
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.willg.link`)"
+
+###############################################################
+# Traefik
+###############################################################
+
+traefik:
+    container_name: traefik
+    image: traefik:latest
+    restart: unless-stopped
+    command:
+      - --entrypoints.web.address=:80
+      - --api
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.domains[0].main=${DOMAINNAME}
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAINNAME}
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false 
+      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge=true
+      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.letsencryptresolver.acme.email=${EMAIL}
+      - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
+      - --log.level=info
+      - --providers.file.filename=/dynamic.yml
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+     - reverse_proxy
+    environment:
+      - CF_API_EMAIL=${EMAIL}
+      - CF_API_KEY=${KEY}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - ${TRAEFIK_DIR}/acme.json:/acme.json 
+      - /container_data/traefik/dynamic.yml:/dynamic.yml:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.admin.basicauth.users=${HTTP_BASIC_USER}:${HTTP_BASIC_PWD}
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.rule=Host(`${DOMAINNAME}`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=admin
+      - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
+      - traefik.http.middlewares.middlewares-authentik.forwardAuth.address=http://172.26.0.9:9000/outpost.goauthentik.io/auth/traefik
+      - traefik.http.middlewares.middlewares-authentik.forwardAuth.trustForwardHeader=true
+      - traefik.http.middlewares.middlewares-authentik.forwardAuth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
+
+###############################################################
+# Volumes
+###############################################################
+
+volumes:
+  database:
+    driver: local
+  redis:
+    driver: local
+
+  downloads:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/media/Downloads'
+
+  tv:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/media/TV'
+
+  movies:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/media/Movies'
+  
+  plexconfig:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/media/plex'
+
+  sonarrconfig:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/media/sonarr'
+
+  radarrconfig:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/media/radarr'
+
+  sabnzbdconfig:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/media/sabnzbd'
+
+  portainer_data:
+    external: true
+
+
+###############################################################
+# Networks
+###############################################################
+networks:
+  reverse_proxy:
+    external: true
