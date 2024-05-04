@@ -287,7 +287,7 @@ services:
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.rule=Host(`${DOMAINNAME}`)
       - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.middlewares=admin
+      - traefik.http.routers.traefik.middlewares=middlewares-authentik@docker
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
       - traefik.http.middlewares.middlewares-authentik.forwardAuth.address=http://172.26.0.100:9000/outpost.goauthentik.io/auth/traefik
       - traefik.http.middlewares.middlewares-authentik.forwardAuth.trustForwardHeader=true
