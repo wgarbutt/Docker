@@ -22,6 +22,8 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS:?database password required}
       POSTGRES_USER: ${PG_USER:-authentik}
       POSTGRES_DB: ${PG_DB:-authentik}
+    env_file:
+      - env.env
     networks:
       - reverse_proxy
 
@@ -60,6 +62,8 @@ services:
       - "${COMPOSE_PORT_HTTPS:-9090}:9443"
     networks:
       - reverse_proxy
+    env_file:
+      - env.env
     depends_on:
       - postgresql
       - redis
@@ -87,6 +91,8 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
     user: root
+    env_file:
+      - env.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./media:/media
