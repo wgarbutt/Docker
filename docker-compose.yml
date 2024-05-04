@@ -239,10 +239,10 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sonarr.tls=true"
-      - "traefik.http.routers.sonarr.entrypoints=websecure"
-      - "traefik.http.routers.sonarr.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.sonarr.rule=Host(`sonarr.willg.link`)"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.willg.link`)"
 
 ###############################################################
 # Traefik
