@@ -179,7 +179,7 @@ services:
       - "traefik.http.routers.sonarr.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.willg.link`)"
       - "traefik.http.routers.sonarr.middlewares=middlewares-authentik@docker"
-      - "traefik.http.routers.sonarr.service=sonarr-media"
+      - "traefik.http.routers.sonarr.service=sonarr-docker"
   radarr:
     container_name: radarr
     image: linuxserver/radarr:latest
