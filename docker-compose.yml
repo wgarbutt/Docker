@@ -337,7 +337,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/container_data/media/plex'
+      device: '/mnt/media/plex'
 
   sonarrconfig:
     driver: local
