@@ -300,8 +300,16 @@ services:
 volumes:
   database:
     driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/var/lib/docker/volumes/authentik_database/_data'
   redis:
     driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/var/lib/docker/volumes/authentik_redis/_data'
 
   downloads:
     driver: local
@@ -351,6 +359,7 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/media/sabnzbd'
+
 
   portainer_data:
     external: true
