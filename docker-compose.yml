@@ -243,6 +243,7 @@ services:
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.portainer.rule=Host(`portainer.willg.link`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9443"
 
 ###############################################################
 # Traefik
