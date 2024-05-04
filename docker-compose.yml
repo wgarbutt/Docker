@@ -22,8 +22,6 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS:?database password required}
       POSTGRES_USER: ${PG_USER:-authentik}
       POSTGRES_DB: ${PG_DB:-authentik}
-    env_file:
-      - env.env
     networks:
       - reverse_proxy
 
@@ -57,11 +55,9 @@ services:
     volumes:
       - ./media:/media
       - ./custom-templates:/templates
-    env_file:
-      - env.env
     ports:
       - "${COMPOSE_PORT_HTTP:-9000}:9000"
-      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+      - "${COMPOSE_PORT_HTTPS:-9090}:9443"
     networks:
       - reverse_proxy
     depends_on:
@@ -96,8 +92,7 @@ services:
       - ./media:/media
       - ./certs:/certs
       - ./custom-templates:/templates
-    env_file:
-      - env.env
+
     depends_on:
       - postgresql
       - redis
@@ -268,12 +263,9 @@ services:
       - --log.level=info
       - --providers.file.filename=/dynamic.yml
     ports:
-      - 80:80
       - 443:443
     networks:
       - reverse_proxy
-    env_file:
-      - env.env
     environment:
       - CF_API_EMAIL=${EMAIL}
       - CF_API_KEY=${KEY}
