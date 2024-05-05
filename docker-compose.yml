@@ -369,6 +369,8 @@ volumes:
       o: 'bind'
       device: '/container_data/media/sabnzbd'
 
+  jenkins-data:
+    external: true
 
   portainer_data:
     external: true
