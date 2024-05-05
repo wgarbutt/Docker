@@ -299,17 +299,9 @@ services:
 
 volumes:
   database:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/var/lib/docker/volumes/authentik_database/_data'
+    external: true
   redis:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/var/lib/docker/volumes/authentik_redis/_data'
+    external: true
 
   downloads:
     driver: local
