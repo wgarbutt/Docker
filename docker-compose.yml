@@ -300,11 +300,12 @@ services:
 ###############################################################
 
   jenkins:
+    container_name: jenkins
     image: jenkins/jenkins:lts
     privileged: true
     user: root
     ports:
-      - 8080:8080
+      - 8100:8080
       - 50000:50000
     volumes:
       - jenkins-data:/var/jenkins_home
