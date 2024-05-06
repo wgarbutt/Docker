@@ -312,7 +312,13 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jenkins.tls=true"
+      - "traefik.http.routers.jenkins.entrypoints=websecure"
+      - "traefik.http.routers.jenkins.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.willg.link`)"
+      - "traefik.http.routers.sonarr.middlewares=middlewares-authentik@docker"
 ###############################################################
 # Volumes
 ###############################################################
