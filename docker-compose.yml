@@ -309,6 +309,8 @@ services:
       - 50000:50000
     networks:
       - reverse_proxy
+    dns:
+      - 192.168.90.100
     volumes:
       - jenkins-data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
