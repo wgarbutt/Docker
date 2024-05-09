@@ -345,7 +345,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/will/home/Docker'
+      device: '/home/will/Docker'
 
   tv:
     driver: local
