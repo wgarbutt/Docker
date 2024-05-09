@@ -271,6 +271,7 @@ services:
       - --log.level=info
       - --providers.file.filename=/dynamic.yml
     ports:
+      - 80:80
       - 443:443
     networks:
       - reverse_proxy
