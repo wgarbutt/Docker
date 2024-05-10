@@ -322,7 +322,7 @@ services:
       - "traefik.http.routers.jenkins.entrypoints=websecure"
       - "traefik.http.routers.jenkins.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.willg.link`)"
-      - #"traefik.http.routers.jenkins.middlewares=middlewares-authentik@docker"
+      #-  "traefik.http.routers.jenkins.middlewares=middlewares-authentik@docker"
 ###############################################################
 # Volumes
 ###############################################################
