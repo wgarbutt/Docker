@@ -314,7 +314,6 @@ services:
       - 192.168.90.100
     volumes:
       - jenkins-data:/var/jenkins_home
-      - home_folder:/mnt/home_folder
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
@@ -339,13 +338,6 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/mnt/media/Downloads'
-  
-  home_folder:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/home/will/'
 
   tv:
     driver: local
@@ -394,7 +386,7 @@ volumes:
 
   portainer_data:
     external: true
-##
+
 
 
 
