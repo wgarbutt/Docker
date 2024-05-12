@@ -333,7 +333,7 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/authentik/db'
-      
+
   docker_authentikredis:
     driver: local
     driver_opts:
@@ -391,10 +391,18 @@ volumes:
       device: '/container_data/media/sabnzbd'
 
   jenkins-data:
-    external: true
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/jenkins'
 
   portainer_data:
-    external: true
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/portainer'
 
 
 
