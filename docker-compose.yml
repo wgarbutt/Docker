@@ -328,9 +328,18 @@ services:
 
 volumes:
   docker_authentikdb:
-    external: true
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/authentik/db'
+      
   docker_authentikredis:
-    external: true
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/authentik/redis'
 
   downloads:
     driver: local
