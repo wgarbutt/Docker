@@ -322,11 +322,51 @@ services:
       - "traefik.http.routers.jenkins.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.willg.link`)"
       #-  "traefik.http.routers.jenkins.middlewares=middlewares-authentik@docker"
+
+###############################################################
+# Duplicati
+###############################################################
+  duplicati:
+    image: lscr.io/linuxserver/duplicati:latest
+    container_name: duplicati
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=NZ
+      - CLI_ARGS= #optional
+    volumes:
+      - duplicati_data::/config
+      - local_backup:/backups
+      - docker_data:/source
+    ports:
+      - 8200:8200
+    restart: unless-stopped
 ###############################################################
 # Volumes
 #################################################################
 
 volumes:
+  duplicati_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/duplicati'
+
+  local_backup:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/will/backup'
+
+  docker_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data'
+
   docker_authentikdb:
     driver: local
     driver_opts:
