@@ -115,7 +115,7 @@ services:
     image: lissy93/dashy
     container_name: dashy
     volumes:
-      - /home/will/dashy/dashy-conf.yml:/app/user-data/conf.yml
+      - /container_data/dashy/dashy-conf.yml:/app/user-data/conf.yml
     ports:
       - 8090:8080
     networks:
