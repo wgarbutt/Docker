@@ -340,7 +340,15 @@ services:
       - docker_data:/source
     ports:
       - 8200:8200
+    networks:
+      - reverse_proxy
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backup.tls=true"
+      - "traefik.http.routers.backup.entrypoints=websecure"
+      - "traefik.http.routers.backup.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.backup.rule=Host(`backup.willg.link`)"
 ###############################################################
 # Volumes
 #################################################################
