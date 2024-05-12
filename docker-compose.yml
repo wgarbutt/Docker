@@ -335,7 +335,7 @@ services:
       - TZ=NZ
       - CLI_ARGS= #optional
     volumes:
-      - duplicati_data::/config
+      - duplicati_data:/config
       - local_backup:/backups
       - docker_data:/source
     ports:
