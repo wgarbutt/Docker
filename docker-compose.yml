@@ -334,6 +334,7 @@ services:
       - PGID=1000
       - TZ=NZ
       - CLI_ARGS= #optional
+      - DOCKER_MODS=linuxserver/mods:code-server-docker
     volumes:
       - duplicati_data:/config
       - local_backup:/backups
