@@ -361,6 +361,7 @@ services:
     container_name: uptime-kuma
     volumes:
       - uptimekuma_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock 
     ports:
       - 3001:3001  
     networks:
