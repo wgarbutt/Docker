@@ -352,6 +352,26 @@ services:
       - "traefik.http.routers.backup.entrypoints=websecure"
       - "traefik.http.routers.backup.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.backup.rule=Host(`backup.willg.link`)"
+      
+###############################################################
+# UpTimeKuma
+###############################################################    
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - uptimekuma-data:/app/data
+    ports:
+      - 3001:3001  # <Host Port>:<Container Port>
+    restart: always  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptimekuma.tls=true"
+      - "traefik.http.routers.uptimekuma.entrypoints=websecure"
+      - "traefik.http.routers.uptimekuma.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.uptimekuma.rule=Host(`status.willg.link`)"
+      
+
 ###############################################################
 # Volumes
 #################################################################
@@ -363,6 +383,14 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/duplicati'
+
+
+  uptimekuma_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/uptimekuma'
 
   local_backup:
     driver: local
