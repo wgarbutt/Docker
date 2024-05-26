@@ -362,7 +362,9 @@ services:
     volumes:
       - uptimekuma_data:/app/data
     ports:
-      - 3001:3001  # <Host Port>:<Container Port>
+      - 3001:3001  
+    networks:
+      - reverse_proxy 
     restart: always  
     labels:
       - "traefik.enable=true"
