@@ -374,7 +374,32 @@ services:
       - "traefik.http.routers.uptimekuma.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.uptimekuma.rule=Host(`status.willg.link`)"
       
-
+      
+      
+      
+###############################################################
+# Actual Budget
+###############################################################
+  actual-development:
+    build: latest
+    container_name: Actual_Budget
+    image: actual-development
+    environment:
+      - HTTPS
+    networks:
+     - reverse_proxy 
+    ports:
+      - '3001:3001'
+    volumes:
+      - actualbudget_data:/app
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actualbudget.tls=true"
+      - "traefik.http.routers.actualbudget.entrypoints=websecure"
+      - "traefik.http.routers.actualbudget.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.actualbudget.rule=Host(`budget.willg.link`)"
+    
 ###############################################################
 # Volumes
 #################################################################
@@ -387,6 +412,12 @@ volumes:
       o: 'bind'
       device: '/container_data/duplicati'
 
+  actualbudget_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/actualbudget'
 
   uptimekuma_data:
     driver: local
