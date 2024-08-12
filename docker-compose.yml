@@ -381,17 +381,15 @@ services:
 # Actual Budget
 ###############################################################
   actual-development:
-    build: latest
     container_name: Actual_Budget
-    image: actual-development
-    environment:
-      - HTTPS
+    image: docker.io/actualbudget/actual-server:latest
+
     networks:
      - reverse_proxy 
     ports:
       - '3001:3001'
     volumes:
-      - actualbudget_data:/app
+      - actualbudget_data:/data
     restart: always
     labels:
       - "traefik.enable=true"
