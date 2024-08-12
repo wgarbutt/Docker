@@ -387,7 +387,7 @@ services:
     networks:
      - reverse_proxy 
     ports:
-      - '3001:3001'
+      - '5001:5001'
     volumes:
       - actualbudget_data:/data
     restart: always
