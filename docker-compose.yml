@@ -1,14 +1,12 @@
 ---
 version: "3.4"
 services:
-
 ###############################################################
-# Authentik 
+# Postgres - Shared
 ###############################################################
-
   postgresql:
     image: docker.io/library/postgres:12-alpine
-    container_name: authentik-postgres
+    container_name: postgres
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
@@ -17,7 +15,7 @@ services:
       retries: 5
       timeout: 5s
     volumes:
-      - docker_authentikdb:/var/lib/postgresql/data
+      - docker_postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${PG_PASS:?database password required}
       POSTGRES_USER: ${PG_USER:-authentik}
@@ -27,6 +25,10 @@ services:
     networks:
       - reverse_proxy
 
+
+###############################################################
+# Authentik 
+###############################################################
   redis:
     image: docker.io/library/redis:alpine
     container_name: authentik_redis
@@ -385,7 +387,7 @@ services:
     image: docker.io/actualbudget/actual-server:latest
 
     networks:
-     - reverse_proxy 
+      - reverse_proxy 
     ports:
       - '5006:5006'
     volumes:
@@ -438,12 +440,12 @@ volumes:
       o: 'bind'
       device: '/container_data'
 
-  docker_authentikdb:
+  docker_postgres:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/container_data/authentik/db'
+      device: '/container_data/postgres'
 
   docker_authentikredis:
     driver: local
