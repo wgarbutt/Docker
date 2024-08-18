@@ -9,7 +9,7 @@ services:
     container_name: postgres
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres}"]
       start_period: 20s
       interval: 30s
       retries: 5
@@ -17,9 +17,7 @@ services:
     volumes:
       - docker_postgres:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
-      POSTGRES_USER: ${PG_USER:-authentik}
-      POSTGRES_DB: ${PG_DB:-authentik}
+      POSTGRES_PASSWORD: ${PG_PASS}
     env_file:
       - env.env
     networks:
@@ -400,6 +398,40 @@ services:
       - "traefik.http.routers.actualbudget.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.actualbudget.rule=Host(`budget.willg.link`)"
     
+
+###############################################################
+# Tandor
+###############################################################
+  tandoor:
+    image: vabene1111/recipes
+    container_name: tandoor
+    restart: unless-stopped
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=tandoor
+      - POSTGRES_USER=tandoor
+      - POSTGRES_PASSWORD=${TANDOOR_DB_PASSWORD}
+      - SECRET_KEY=${TANDOOR_SECRET_KEY}
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./tandoor_data/mediafiles:/opt/recipes/mediafiles
+      - ./tandoor_data/staticfiles:/opt/recipes/staticfiles
+    networks:
+      - reverse_proxy
+    depends_on:
+      - postgresql
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tandoor.rule=Host(`recipes.willg.link`)"
+      - "traefik.http.routers.tandoor.entrypoints=websecure"
+      - "traefik.http.routers.tandoor.tls=true"
+      - "traefik.http.routers.tandoor.tls.certresolver=letsencryptresolver"
+
+
+
+
 ###############################################################
 # Volumes
 #################################################################
@@ -411,6 +443,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/duplicati'
+
+  tandor_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/tandor'
 
   actualbudget_data:
     driver: local
