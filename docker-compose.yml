@@ -422,6 +422,8 @@ services:
       - reverse_proxy
     depends_on:
       - postgresql
+    env_file:
+      - env.env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tandoor.rule=Host(`recipes.willg.link`)"
