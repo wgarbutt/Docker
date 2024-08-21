@@ -5,7 +5,7 @@ services:
 # Postgres - Shared
 ###############################################################
   postgresql:
-    image: docker.io/library/postgres:12-alpine
+    image: postgres:16.4-bullseye
     container_name: postgres
     restart: unless-stopped
     healthcheck:
@@ -484,7 +484,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/container_data/postgres'
+      device: '/container_data/postgres16'
 
   docker_authentikredis:
     driver: local
