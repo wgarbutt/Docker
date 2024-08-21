@@ -443,7 +443,7 @@ services:
       - ./paperless_export:/usr/src/paperless/export
       - ./paperless_consume:/usr/src/paperless/consume
     environment:
-      PAPERLESS_URL: http://docs.willg.link
+      PAPERLESS_URL: https://docs.willg.link
       PAPERLESS_TIME_ZONE: Pacific/Auckland
       PAPERLESS_OCR_LANGUAGE: eng
       PAPERLESS_ADMIN_USER: admin
