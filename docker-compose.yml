@@ -15,7 +15,7 @@ services:
       retries: 5
       timeout: 5s
     volumes:
-      - docker_postgres:/var/lib/postgresql/data
+      - docker_postgres16:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${PG_PASS}
     env_file:
@@ -479,7 +479,7 @@ volumes:
       o: 'bind'
       device: '/container_data'
 
-  docker_postgres:
+  docker_postgres16:
     driver: local
     driver_opts:
       type: 'none'
