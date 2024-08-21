@@ -429,8 +429,34 @@ services:
       - "traefik.http.routers.tandoor.tls=true"
       - "traefik.http.routers.tandoor.tls.certresolver=letsencryptresolver"
 
-
-
+###############################################################
+# Paperless
+###############################################################
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    ports:
+      - 8000:8000
+    volumes:
+      - ./paperless_data:/usr/src/paperless/data
+      - ./paperless_media:/usr/src/paperless/media
+      - ./paperless_export:/usr/src/paperless/export
+      - ./paperless_consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_URL: http://documents.willg.link:8000
+      PAPERLESS_TIME_ZONE: Pacific/Auckland
+      PAPERLESS_OCR_LANGUAGE: eng
+      PAPERLESS_ADMIN_USER: admin
+      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD}
+      PAPERLESS_DBHOST: postgres
+      PAPERLESS_DBPORT: 5432
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: ${PAPERLESS_DB_PASSWORD}
+      PAPERLESS_REDIS: redis://authentik_redis:6379
+    restart: unless-stopped
+    networks:
+      - reverse_proxy
 
 ###############################################################
 # Volumes
@@ -443,6 +469,34 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/duplicati'
+
+  paperless_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/paperless/data'
+
+  paperless_media:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/paperless/media'
+
+  paperless_export:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/paperless/export'
+
+  paperless_consume:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/paperless/consume'
 
   tandor_data:
     driver: local
