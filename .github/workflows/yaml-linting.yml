@@ -1,3 +1,4 @@
+---
 name: YAML Lint
 
 on: [push, pull_request]
@@ -19,3 +20,4 @@ jobs:
                 level: warning
               truthy:
                 check-keys: false
+              document-start: disable
