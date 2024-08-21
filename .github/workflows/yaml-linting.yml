@@ -11,4 +11,11 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: .github/workflows/
-          config_file: .yamllint.yml
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 120
+                level: warning
+              truthy:
+                check-keys: false
