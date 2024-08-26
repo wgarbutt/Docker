@@ -55,8 +55,8 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
     volumes:
-      - ./media:/media
-      - ./custom-templates:/templates
+      - authentik_data:/media
+      - authentik_data:/templates
     ports:
       - "${COMPOSE_PORT_HTTP:-9080}:9000"
       - "${COMPOSE_PORT_HTTPS:-9090}:9443"
@@ -96,9 +96,9 @@ services:
       - env.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./media:/media
-      - ./certs:/certs
-      - ./custom-templates:/templates
+      - authentik_data:/media
+      - authentik_data:/certs
+      - authentik_data:/templates
 
     depends_on:
       - postgresql
@@ -477,6 +477,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/duplicati'
+
+  authentik_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/authentik'
 
   paperless_data:
     driver: local
