@@ -1,10 +1,9 @@
----
 name: Update Docker Containers
 
 on:
   push:
     branches:
-      - main
+      - main  # or whatever your default branch is named
 
 jobs:
   update:
@@ -21,19 +20,18 @@ jobs:
           pwd
           ls -la
 
-      - name: Set up Git repository
+      - name: Configure Git
         working-directory: /container_data/Docker
         run: |
-          if [ ! -d .git ]; then
-            git init
-            git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-            git fetch
-            git checkout -b main origin/main
-          fi
+          git config --global --add safe.directory /container_data/Docker
+          git config --global user.email "runner@github.com"
+          git config --global user.name "GitHub Runner"
 
       - name: Pull latest changes
         working-directory: /container_data/Docker
-        run: git pull origin main
+        run: |
+          git fetch origin
+          git reset --hard origin/main
 
       - name: Stop running containers
         working-directory: /container_data/Docker
