@@ -9,6 +9,25 @@ jobs:
   update:
     runs-on: self-hosted
     steps:
+      - name: Check sudo and Git permissions
+        run: |
+          echo "Checking sudo permissions:"
+          sudo -n true && echo "Runner has sudo access" || echo "Runner does not have sudo access"
+          
+          echo "Checking Git global config write permissions:"
+          if touch ~/.gitconfig 2>/dev/null; then
+            echo "Runner can write to global Git config"
+            rm ~/.gitconfig
+          else
+            echo "Runner cannot write to global Git config"
+          fi
+          
+          echo "Checking Git version:"
+          git --version
+          
+          echo "Listing current Git config:"
+          git config --list --show-origin
+
       - name: Check current directory and change to project directory
         run: |
           echo "Current directory before change:"
