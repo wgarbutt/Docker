@@ -1,41 +1,28 @@
-name: Update Docker Containers
+name: Check Runner User and Permissions
 
 on:
   push:
     branches:
-      - main  # or whatever your default branch is named
+      - main
 
 jobs:
-  update:
+  check-user:
     runs-on: self-hosted
     steps:
-      - name: Change to project directory and check contents
+      - name: Check current user and environment
         run: |
-          cd /container_data/Docker || exit 1
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
+          echo "Current user:"
+          id
+          echo "User's groups:"
+          groups
+          echo "Process information:"
+          ps aux | grep actions-runner
+          echo "Runner directory permissions:"
+          ls -la /home/will/actions-runner
+          echo "Docker directory permissions:"
+          ls -la /container_data/Docker
 
-      - name: Configure Git
-        working-directory: /container_data/Docker
+      - name: Check Docker permissions
         run: |
-          git config --global --add safe.directory /container_data/Docker
-          git config --global user.email "runner@github.com"
-          git config --global user.name "GitHub Runner"
-          echo "Updated Git config:"
-          git config --list
-
-      - name: Pull latest changes
-        working-directory: /container_data/Docker
-        run: |
-          git fetch origin
-          git reset --hard origin/main
-
-      - name: Stop running containers
-        working-directory: /container_data/Docker
-        run: docker-compose down
-
-      - name: Start updated containers
-        working-directory: /container_data/Docker
-        run: docker-compose up -d --build
+          docker info || echo "Docker not accessible"
+          docker-compose version || echo "docker-compose not accessible"
