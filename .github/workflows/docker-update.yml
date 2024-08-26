@@ -14,11 +14,25 @@ jobs:
           cd /container_data/Docker
           git pull origin main
 
+      - name: List directory contents
+        run: |
+          pwd
+          ls -la
+
+      - name: Check Docker Compose file
+        run: |
+          if [ -f "docker-compose.yml" ]; then
+            echo "docker-compose.yml exists"
+            cat docker-compose.yml
+          else
+            echo "docker-compose.yml not found"
+          fi
+
       - name: Stop running containers
-        run: docker-compose down
+        run: docker-compose -f /container_data/Docker/docker-compose.yml down
 
       - name: Start updated containers
-        run: docker-compose up -d --build
+        run: docker-compose -f /container_data/Docker/docker-compose.yml up -d --build
 
       - name: Check Docker status
         run: |
