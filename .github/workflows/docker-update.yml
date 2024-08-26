@@ -9,34 +9,12 @@ jobs:
   update:
     runs-on: self-hosted
     steps:
-      - name: Check sudo and Git permissions
+      - name: Change to project directory and check contents
         run: |
-          echo "Checking sudo permissions:"
-          sudo -n true && echo "Runner has sudo access" || echo "Runner does not have sudo access"
-          
-          echo "Checking Git global config write permissions:"
-          if touch ~/.gitconfig 2>/dev/null; then
-            echo "Runner can write to global Git config"
-            rm ~/.gitconfig
-          else
-            echo "Runner cannot write to global Git config"
-          fi
-          
-          echo "Checking Git version:"
-          git --version
-          
-          echo "Listing current Git config:"
-          git config --list --show-origin
-
-      - name: Check current directory and change to project directory
-        run: |
-          echo "Current directory before change:"
-          pwd
-          ls -la
-          echo "Changing to /container_data/Docker"
           cd /container_data/Docker || exit 1
-          echo "Current directory after change:"
+          echo "Current directory:"
           pwd
+          echo "Directory contents:"
           ls -la
 
       - name: Configure Git
@@ -45,6 +23,8 @@ jobs:
           git config --global --add safe.directory /container_data/Docker
           git config --global user.email "runner@github.com"
           git config --global user.name "GitHub Runner"
+          echo "Updated Git config:"
+          git config --list
 
       - name: Pull latest changes
         working-directory: /container_data/Docker
