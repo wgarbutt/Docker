@@ -1,4 +1,4 @@
-name: Check Runner User and Permissions
+name: Update Docker Containers
 
 on:
   push:
@@ -6,23 +6,21 @@ on:
       - main
 
 jobs:
-  check-user:
+  update:
     runs-on: self-hosted
     steps:
-      - name: Check current user and environment
+      - name: Change to project directory and pull changes
         run: |
-          echo "Current user:"
-          id
-          echo "User's groups:"
-          groups
-          echo "Process information:"
-          ps aux | grep actions-runner
-          echo "Runner directory permissions:"
-          ls -la /home/will/actions-runner
-          echo "Docker directory permissions:"
-          ls -la /container_data/Docker
+          cd /container_data/Docker
+          git pull origin main
 
-      - name: Check Docker permissions
+      - name: Stop running containers
+        run: docker-compose down
+
+      - name: Start updated containers
+        run: docker-compose up -d --build
+
+      - name: Check Docker status
         run: |
-          docker info || echo "Docker not accessible"
-          docker-compose version || echo "docker-compose not accessible"
+          docker info
+          docker-compose version
