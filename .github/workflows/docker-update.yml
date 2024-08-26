@@ -1,0 +1,24 @@
+name: Update Docker Containers
+
+on:
+  push:
+    branches:
+      - main  # or whatever your default branch is named
+
+jobs:
+  update:
+    runs-on: self-hosted
+    steps:
+      - name: Change to project directory
+        run: |
+          cd /container_data/Docker || exit 1
+          echo "Successfully changed to project directory"
+        
+      - name: Pull latest changes
+        run: git pull origin main  # Replace 'main' with your branch name if different
+        
+      - name: Stop running containers
+        run: docker-compose down
+        
+      - name: Start updated containers
+        run: docker-compose up -d --build
