@@ -1,4 +1,3 @@
----
 name: Update Docker Containers
 
 on:
@@ -14,22 +13,22 @@ jobs:
         run: |
           pwd
           ls -la
-        
+
       - name: Change to project directory
         run: |
           cd /container_data/Docker || exit 1
           echo "Successfully changed to project directory"
-        
+
       - name: Check project directory
         run: |
           pwd
           ls -la
-          
+
       - name: Pull latest changes
-        run: git pull origin main  
-        
+        run: git pull origin main
+
       - name: Stop running containers
         run: docker-compose down
-        
+
       - name: Start updated containers
         run: docker-compose up -d --build
