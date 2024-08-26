@@ -373,10 +373,7 @@ services:
       - "traefik.http.routers.uptimekuma.entrypoints=websecure"
       - "traefik.http.routers.uptimekuma.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.uptimekuma.rule=Host(`status.willg.link`)"
-      
-      
-      
-      
+
 ###############################################################
 # Actual Budget
 ###############################################################
