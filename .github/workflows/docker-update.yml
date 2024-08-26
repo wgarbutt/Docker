@@ -1,34 +1,44 @@
+---
 name: Update Docker Containers
 
 on:
   push:
     branches:
-      - main  # or whatever your default branch is named
+      - main
 
 jobs:
   update:
     runs-on: self-hosted
     steps:
-      - name: Check current directory
+      - name: Check current directory and change to project directory
         run: |
+          echo "Current directory before change:"
           pwd
           ls -la
-
-      - name: Change to project directory
-        run: |
+          echo "Changing to /container_data/Docker"
           cd /container_data/Docker || exit 1
-          echo "Successfully changed to project directory"
-
-      - name: Check project directory
-        run: |
+          echo "Current directory after change:"
           pwd
           ls -la
+
+      - name: Set up Git repository
+        working-directory: /container_data/Docker
+        run: |
+          if [ ! -d .git ]; then
+            git init
+            git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+            git fetch
+            git checkout -b main origin/main
+          fi
 
       - name: Pull latest changes
+        working-directory: /container_data/Docker
         run: git pull origin main
 
       - name: Stop running containers
+        working-directory: /container_data/Docker
         run: docker-compose down
 
       - name: Start updated containers
+        working-directory: /container_data/Docker
         run: docker-compose up -d --build
