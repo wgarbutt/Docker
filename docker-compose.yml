@@ -416,8 +416,8 @@ services:
       - SECRET_KEY=${TANDOOR_SECRET_KEY}
       - ALLOWED_HOSTS=*
     volumes:
-      - ./tandoor_data/mediafiles:/opt/recipes/mediafiles
-      - ./tandoor_data/staticfiles:/opt/recipes/staticfiles
+      - /tandoor_data/mediafiles:/opt/recipes/mediafiles
+      - /tandoor_data/staticfiles:/opt/recipes/staticfiles
     networks:
       - reverse_proxy
     depends_on:
@@ -438,10 +438,10 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./paperless_data:/usr/src/paperless/data
-      - ./paperless_media:/usr/src/paperless/media
-      - ./paperless_export:/usr/src/paperless/export
-      - ./paperless_consume:/usr/src/paperless/consume
+      - /paperless_data:/usr/src/paperless/data
+      - /paperless_media:/usr/src/paperless/media
+      - /paperless_export:/usr/src/paperless/export
+      - /paperless_consume:/usr/src/paperless/consume
     environment:
       PAPERLESS_URL: https://docs.willg.link
       PAPERLESS_TIME_ZONE: Pacific/Auckland
@@ -506,12 +506,12 @@ volumes:
       o: 'bind'
       device: '/container_data/paperless/consume'
 
-  tandor_data:
+  tandoor_data:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/container_data/tandor'
+      device: '/container_data/tandoor'
 
   actualbudget_data:
     driver: local
