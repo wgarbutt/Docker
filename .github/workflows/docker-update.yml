@@ -3,7 +3,7 @@ name: Update Docker Containers
 on:
   push:
     branches:
-      - main  # or whatever your default branch is named
+      - main  
 
 jobs:
   update:
@@ -15,7 +15,7 @@ jobs:
           echo "Successfully changed to project directory"
         
       - name: Pull latest changes
-        run: git pull origin main  # Replace 'main' with your branch name if different
+        run: git pull 
         
       - name: Stop running containers
         run: docker-compose down
