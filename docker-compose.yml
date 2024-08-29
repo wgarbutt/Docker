@@ -7,7 +7,7 @@ services:
   postgresql:
     image: postgres:16.4-bullseye
     container_name: postgres
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres}"]
       start_period: 20s
@@ -31,7 +31,7 @@ services:
     image: docker.io/library/redis:alpine
     container_name: authentik_redis
     command: --save 60 1 --loglevel warning
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       start_period: 20s
@@ -46,7 +46,7 @@ services:
   server:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
     container_name: authentik_server
-    restart: unless-stopped
+    restart: always
     command: server
     environment:
       AUTHENTIK_REDIS__HOST: redis
@@ -83,7 +83,7 @@ services:
   worker:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
     container_name: authentik_worker
-    restart: unless-stopped
+    restart: always
     command: worker
     environment:
       AUTHENTIK_REDIS__HOST: redis
@@ -122,7 +122,7 @@ services:
       - reverse_proxy    
     environment:
       - NODE_ENV=production
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: ['CMD', 'node', '/app/services/healthcheck']
       interval: 1m30s
@@ -155,12 +155,12 @@ services:
       - 8079:8079
     networks:
       - reverse_proxy
-    restart: unless-stopped
+    restart: always
 
   sonarr:
     container_name: sonarr
     image: linuxserver/sonarr:latest
-    restart: unless-stopped
+    restart: always
     environment:
       - PUID=1000
       - PGID=1000
@@ -184,7 +184,7 @@ services:
   radarr:
     container_name: radarr
     image: linuxserver/radarr:latest
-    restart: unless-stopped
+    restart: always
     environment:
       - PUID=1000
       - PGID=1000
@@ -201,7 +201,7 @@ services:
   plex:
     container_name: plex
     image: plexinc/pms-docker:latest
-    restart: unless-stopped
+    restart: always
     environment:
       - PUID=1000
       - PGID=1000
@@ -253,7 +253,7 @@ services:
   traefik:
     container_name: traefik
     image: traefik:latest
-    restart: unless-stopped
+    restart: always
     command:
       - --entrypoints.web.address=:80
       - --api
@@ -345,7 +345,7 @@ services:
       - 8200:8200
     networks:
       - reverse_proxy
-    restart: unless-stopped
+    restart: always
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backup.tls=true"
@@ -402,7 +402,7 @@ services:
   tandoor:
     image: vabene1111/recipes
     container_name: tandoor
-    restart: unless-stopped
+    restart: always
     environment:
       - DB_ENGINE=django.db.backends.postgresql
       - POSTGRES_HOST=postgres
@@ -451,7 +451,7 @@ services:
       PAPERLESS_DBUSER: paperless
       PAPERLESS_DBPASS: ${PAPERLESS_DB_PASSWORD}
       PAPERLESS_REDIS: redis://authentik_redis:6379
-    restart: unless-stopped
+    restart: always
     depends_on:
       - postgresql
     labels:
@@ -464,10 +464,52 @@ services:
       - reverse_proxy
 
 ###############################################################
+# Frigate
+###############################################################
+  frigate:
+    container_name: frigate
+    restart: always
+    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "128mb" 
+    devices:
+      - /dev/bus/usb:/dev/bus/usb 
+    volumes:
+      - /usr/share/zoneinfo/Pacific/Auckland:/etc/localtime:ro
+      - frigate_config:/config
+      - frigate_storage:/media/frigate
+      - type: tmpfs 
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    ports:
+      - "8971:8971"
+      - "5000:5000" 
+      - "8554:8554" # RTSP feeds
+      - "8555:8555/tcp" # WebRTC over tcp
+      - "8555:8555/udp" # WebRTC over udp
+    environment:
+      FRIGATE_RTSP_PASSWORD: ${FRIGATE_PASSWORD}
+
+
+###############################################################
 # Volumes
 #################################################################
 
 volumes:
+  frigate_config:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/frigate'
+
+  frigate_storage:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/recordings'
+
   duplicati_data:
     driver: local
     driver_opts:
