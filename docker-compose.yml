@@ -470,7 +470,7 @@ services:
     container_name: frigate
     restart: always
     image: ghcr.io/blakeblackshear/frigate:stable
-    shm_size: "128mb" 
+    shm_size: "512mb" 
     devices:
       - /dev/bus/usb:/dev/bus/usb 
     volumes:
