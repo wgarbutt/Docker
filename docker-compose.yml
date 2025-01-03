@@ -24,87 +24,87 @@ services:
       - reverse_proxy
 
 
-###############################################################
-# Authentik 
-###############################################################
-  redis:
-    image: docker.io/library/redis:alpine
-    container_name: authentik_redis
-    command: --save 60 1 --loglevel warning
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 3s
-    volumes:
-      - docker_authentikredis:/data
-    networks:
-      - reverse_proxy
+# ###############################################################
+# # Authentik 
+# ###############################################################
+#   redis:
+#     image: docker.io/library/redis:alpine
+#     container_name: authentik_redis
+#     command: --save 60 1 --loglevel warning
+#     restart: always
+#     healthcheck:
+#       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+#       start_period: 20s
+#       interval: 30s
+#       retries: 5
+#       timeout: 3s
+#     volumes:
+#       - docker_authentikredis:/data
+#     networks:
+#       - reverse_proxy
 
-  server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
-    container_name: authentik_server
-    restart: always
-    command: server
-    environment:
-      AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
-    volumes:
-      - authentik_data:/media
-      - authentik_data:/templates
-    ports:
-      - "${COMPOSE_PORT_HTTP:-9080}:9000"
-      - "${COMPOSE_PORT_HTTPS:-9090}:9443"
-    networks:
-      reverse_proxy:
-        ipv4_address: 172.26.0.100
-    env_file:
-      - env.env
-    depends_on:
-      - postgresql
-      - redis
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.authentik.rule=Host(`authentik.willg.link`)"
-      - "traefik.http.routers.authentik.entrypoints=websecure"
-      - "traefik.http.routers.authentik.tls=true"
-      - "traefik.http.routers.authentik.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.authentik-outpost.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.willg.link`) && PathPrefix(`/outpost.goauthentik.io/`)"
-      - "traefik.http.routers.authentik-outpost.tls=true"
-      - "traefik.http.routers.authentik-outpost.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.authentik.service=authentik-svc"
-      - "traefik.http.services.authentik-svc.loadBalancer.server.port=9000"
+#   server:
+#     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
+#     container_name: authentik_server
+#     restart: always
+#     command: server
+#     environment:
+#       AUTHENTIK_REDIS__HOST: redis
+#       AUTHENTIK_POSTGRESQL__HOST: postgresql
+#       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+#       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+#       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+#     volumes:
+#       - authentik_data:/media
+#       - authentik_data:/templates
+#     ports:
+#       - "${COMPOSE_PORT_HTTP:-9080}:9000"
+#       - "${COMPOSE_PORT_HTTPS:-9090}:9443"
+#     networks:
+#       reverse_proxy:
+#         ipv4_address: 172.26.0.100
+#     env_file:
+#       - env.env
+#     depends_on:
+#       - postgresql
+#       - redis
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.authentik.rule=Host(`authentik.willg.link`)"
+#       - "traefik.http.routers.authentik.entrypoints=websecure"
+#       - "traefik.http.routers.authentik.tls=true"
+#       - "traefik.http.routers.authentik.tls.certresolver=letsencryptresolver"
+#       - "traefik.http.routers.authentik-outpost.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.willg.link`) && PathPrefix(`/outpost.goauthentik.io/`)"
+#       - "traefik.http.routers.authentik-outpost.tls=true"
+#       - "traefik.http.routers.authentik-outpost.tls.certresolver=letsencryptresolver"
+#       - "traefik.http.routers.authentik.service=authentik-svc"
+#       - "traefik.http.services.authentik-svc.loadBalancer.server.port=9000"
 
-  worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
-    container_name: authentik_worker
-    restart: always
-    command: worker
-    environment:
-      AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
-    user: root
-    env_file:
-      - env.env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - authentik_data:/media
-      - authentik_data:/certs
-      - authentik_data:/templates
+#   worker:
+#     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
+#     container_name: authentik_worker
+#     restart: always
+#     command: worker
+#     environment:
+#       AUTHENTIK_REDIS__HOST: redis
+#       AUTHENTIK_POSTGRESQL__HOST: postgresql
+#       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+#       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+#       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+#     user: root
+#     env_file:
+#       - env.env
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#       - authentik_data:/media
+#       - authentik_data:/certs
+#       - authentik_data:/templates
 
-    depends_on:
-      - postgresql
-      - redis
-    networks:
-      - reverse_proxy
+#     depends_on:
+#       - postgresql
+#       - redis
+#     networks:
+#       - reverse_proxy
 
 
 ###############################################################
