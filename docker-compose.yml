@@ -23,90 +23,6 @@ services:
     networks:
       - reverse_proxy
 
-
-# ###############################################################
-# # Authentik 
-# ###############################################################
-#   redis:
-#     image: docker.io/library/redis:alpine
-#     container_name: authentik_redis
-#     command: --save 60 1 --loglevel warning
-#     restart: always
-#     healthcheck:
-#       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-#       start_period: 20s
-#       interval: 30s
-#       retries: 5
-#       timeout: 3s
-#     volumes:
-#       - docker_authentikredis:/data
-#     networks:
-#       - reverse_proxy
-
-#   server:
-#     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
-#     container_name: authentik_server
-#     restart: always
-#     command: server
-#     environment:
-#       AUTHENTIK_REDIS__HOST: redis
-#       AUTHENTIK_POSTGRESQL__HOST: postgresql
-#       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-#       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-#       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
-#     volumes:
-#       - authentik_data:/media
-#       - authentik_data:/templates
-#     ports:
-#       - "${COMPOSE_PORT_HTTP:-9080}:9000"
-#       - "${COMPOSE_PORT_HTTPS:-9090}:9443"
-#     networks:
-#       reverse_proxy:
-#         ipv4_address: 172.26.0.100
-#     env_file:
-#       - env.env
-#     depends_on:
-#       - postgresql
-#       - redis
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.authentik.rule=Host(`authentik.willg.link`)"
-#       - "traefik.http.routers.authentik.entrypoints=websecure"
-#       - "traefik.http.routers.authentik.tls=true"
-#       - "traefik.http.routers.authentik.tls.certresolver=letsencryptresolver"
-#       - "traefik.http.routers.authentik-outpost.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.willg.link`) && PathPrefix(`/outpost.goauthentik.io/`)"
-#       - "traefik.http.routers.authentik-outpost.tls=true"
-#       - "traefik.http.routers.authentik-outpost.tls.certresolver=letsencryptresolver"
-#       - "traefik.http.routers.authentik.service=authentik-svc"
-#       - "traefik.http.services.authentik-svc.loadBalancer.server.port=9000"
-
-#   worker:
-#     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.4.0}
-#     container_name: authentik_worker
-#     restart: always
-#     command: worker
-#     environment:
-#       AUTHENTIK_REDIS__HOST: redis
-#       AUTHENTIK_POSTGRESQL__HOST: postgresql
-#       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-#       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-#       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
-#     user: root
-#     env_file:
-#       - env.env
-#     volumes:
-#       - /var/run/docker.sock:/var/run/docker.sock
-#       - authentik_data:/media
-#       - authentik_data:/certs
-#       - authentik_data:/templates
-
-#     depends_on:
-#       - postgresql
-#       - redis
-#     networks:
-#       - reverse_proxy
-
-
 ###############################################################
 # Dashy
 ###############################################################
@@ -135,7 +51,7 @@ services:
       - "traefik.http.routers.dashy.entrypoints=websecure"
       - "traefik.http.routers.dashy.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
- #     - "traefik.http.routers.dashy.middlewares=middlewares-authentik@docker"
+
 
 
 ###############################################################
@@ -402,79 +318,24 @@ services:
       - "traefik.http.routers.tandoor.tls=true"
       - "traefik.http.routers.tandoor.tls.certresolver=letsencryptresolver"
 
+
 ###############################################################
-# Paperless
+# MCP Memory
 ###############################################################
-  paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
-    container_name: paperless
-    ports:
-      - 8000:8000
-    volumes:
-      - paperless_data:/usr/src/paperless/data
-      - paperless_media:/usr/src/paperless/media
-      - paperless_export:/usr/src/paperless/export
-      - paperless_consume:/usr/src/paperless/consume
-    environment:
-      PAPERLESS_URL: https://docs.willg.link
-      PAPERLESS_TIME_ZONE: Pacific/Auckland
-      PAPERLESS_OCR_LANGUAGE: eng
-      PAPERLESS_ADMIN_USER: admin
-      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD}
-      PAPERLESS_DBHOST: postgres
-      PAPERLESS_DBPORT: 5432
-      PAPERLESS_DBNAME: paperless
-      PAPERLESS_DBUSER: paperless
-      PAPERLESS_DBPASS: ${PAPERLESS_DB_PASSWORD}
-      PAPERLESS_REDIS: redis://authentik_redis:6379
+  mcpmemory:
+    image: mcpmemory_mcp-memory-server
+    container_name: MCPMemory
     restart: always
-    depends_on:
-      - postgresql
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.paperless.rule=Host(`docs.willg.link`)"
-      - "traefik.http.routers.paperless.entrypoints=websecure"
-      - "traefik.http.routers.paperless.tls=true"
-      - "traefik.http.routers.paperless.tls.certresolver=letsencryptresolver"
+    volumes:
+      - mcpmemory_data:/app/data
     networks:
       - reverse_proxy
-
-###############################################################
-# Frigate
-###############################################################
-  # frigate:
-  #   container_name: frigate
-  #   restart: always
-  #   image: ghcr.io/blakeblackshear/frigate:stable
-  #   shm_size: "512mb" 
-  #   devices:
-  #     - /dev/bus/usb:/dev/bus/usb 
-  #   volumes:
-  #     - /usr/share/zoneinfo/Pacific/Auckland:/etc/localtime:ro
-  #     - frigate_config:/config
-  #     - frigate_storage:/media/frigate
-  #     - type: tmpfs 
-  #       target: /tmp/cache
-  #       tmpfs:
-  #         size: 1000000000
-  #   ports:
-  #     - "8971:8971"
-  #     - "5000:5000" 
-  #     - "8554:8554" # RTSP feeds
-  #     - "8555:8555/tcp" # WebRTC over tcp
-  #     - "8555:8555/udp" # WebRTC over udp
-  #   environment:
-  #     FRIGATE_RTSP_PASSWORD: ${FRIGATE_PASSWORD}
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.frigate.rule=Host(`cameras.willg.link`)"
-  #     - "traefik.http.routers.frigate.entrypoints=websecure"
-  #     - "traefik.http.routers.frigate.tls=true"
-  #     - "traefik.http.routers.frigate.tls.certresolver=letsencryptresolver"
-  #   networks:
-  #     - reverse_proxy
-
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tandoor.rule=Host(`mcp.willg.link`)"
+      - "traefik.http.routers.tandoor.entrypoints=websecure"
+      - "traefik.http.routers.tandoor.tls=true"
+      - "traefik.http.routers.tandoor.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Volumes
@@ -543,6 +404,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/tandoor'
+
+  mcpmemory_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/mcpmemory'
 
   actualbudget_data:
     driver: local
