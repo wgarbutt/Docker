@@ -330,6 +330,8 @@ services:
       - mcpmemory_data:/app/data
     networks:
       - reverse_proxy
+    ports:
+      - '8000:8000'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tandoor.rule=Host(`mcp.willg.link`)"
