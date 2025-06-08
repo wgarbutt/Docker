@@ -310,6 +310,7 @@ services:
       - TZ=NZ
       - CLI_ARGS= #optional
       - DOCKER_MODS=linuxserver/mods:code-server-docker
+      - DUPLICATI__WEBSERVICE_PASSWORD=enter
     volumes:
       - duplicati_data:/config
       - local_backup:/backups
