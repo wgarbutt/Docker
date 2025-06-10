@@ -332,12 +332,12 @@ services:
       - reverse_proxy
     ports:
       - '50880:50880'
-    #labels:
-      # - "traefik.enable=true"
-      # - "traefik.http.routers.mcp.rule=Host(`mcp.willg.link`)"
-      # - "traefik.http.routers.mcp.entrypoints=websecure"
-      # - "traefik.http.routers.mcp.tls=true"
-      # - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp.rule=Host(`mcp.willg.link`)"
+      - "traefik.http.routers.mcp.entrypoints=websecure"
+      - "traefik.http.routers.mcp.tls=true"
+      - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Volumes
