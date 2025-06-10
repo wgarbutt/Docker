@@ -332,7 +332,7 @@ services:
       - reverse_proxy
     ports:
       - '50880:50880'
-    labels:
+    #labels:
       # - "traefik.enable=true"
       # - "traefik.http.routers.mcp.rule=Host(`mcp.willg.link`)"
       # - "traefik.http.routers.mcp.entrypoints=websecure"
