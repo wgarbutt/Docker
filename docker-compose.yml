@@ -350,6 +350,8 @@ services:
       - maintainaar_config:/opt/data
     environment:
       - TZ=NZ
+    networks:
+      - reverse_proxy
     ports:
         - 6246:6246
     restart: unless-stopped
