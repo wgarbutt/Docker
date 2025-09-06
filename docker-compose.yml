@@ -351,8 +351,14 @@ services:
     environment:
       - TZ=NZ
     ports:
-      - 6246:6246
+        - 6246:6246
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintainaar.rule=Host(`maintainaar.willg.link`)"
+      - "traefik.http.routers.maintainaar.entrypoints=websecure"
+      - "traefik.http.routers.maintainaar.tls=true"
+      - "traefik.http.routers.maintainaar.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Volumes
