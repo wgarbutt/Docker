@@ -340,6 +340,21 @@ services:
       - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
 
 ###############################################################
+# Maintainaar
+###############################################################
+  maintainerr:
+    image: ghcr.io/jorenn92/maintainerr:latest # or jorenn92/maintainerr:latest
+    container_name: maintainerr
+    user: 1000:1000
+    volumes:
+      - maintainaar_config:/opt/data
+    environment:
+      - TZ=NZ
+    ports:
+      - 6246:6246
+    restart: unless-stopped
+
+###############################################################
 # Volumes
 #################################################################
 
@@ -357,6 +372,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/mnt/recordings'
+
+  maintainaar_config:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/maintainaar'
 
   duplicati_data:
     driver: local
