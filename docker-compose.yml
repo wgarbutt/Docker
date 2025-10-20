@@ -203,7 +203,7 @@ services:
     environment:
       - TZ=Pacific/Auckland
     devices:
-      - /dev/bus/usb/010/003
+      - "/dev/bus/usb/010/003:/dev/bus/usb/010/003"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.codeproject.rule=Host(`codeproject.willg.link`)"
