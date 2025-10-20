@@ -266,6 +266,13 @@ volumes:
       o: 'bind'
       device: '/container_data/maintainaar'
 
+  codeproject_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/codeprojectai'
+
   mcpmemory_data:
     driver: local
     driver_opts:
