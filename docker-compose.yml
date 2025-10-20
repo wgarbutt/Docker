@@ -200,6 +200,7 @@ services:
     volumes:
       - codeproject_data:/app
       - codeproject_data:/app/Data
+      - "/usr/lib/x86_64-linux-gnu/libedgetpu.so.1:/usr/lib/x86_64-linux-gnu/libedgetpu.so.1:ro"
     environment:
       - TZ=Pacific/Auckland
     devices:
