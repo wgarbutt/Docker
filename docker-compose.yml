@@ -185,32 +185,7 @@ services:
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
 
-###############################################################
-# CodeProject AI
-###############################################################
-  codeprojectai:
-    image: codeproject/ai-server:latest
-    container_name: codeproject-ai
-    restart: unless-stopped
-    ports:
-      - "32168:32168"   
-      - "5000:5000"     
-    networks:
-      - reverse_proxy
-    volumes:
-      - codeproject_data:/app
-      - codeproject_data:/app/Data
-      - "/usr/lib/x86_64-linux-gnu/libedgetpu.so.1:/usr/lib/x86_64-linux-gnu/libedgetpu.so.1:ro"
-    environment:
-      - TZ=Pacific/Auckland
-    devices:
-      - "/dev/bus/usb/010/003:/dev/bus/usb/010/003"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.codeproject.rule=Host(`codeproject.willg.link`)"
-      - "traefik.http.routers.codeproject.entrypoints=websecure"
-      - "traefik.http.routers.codeproject.tls=true"
-      - "traefik.http.routers.codeproject.tls.certresolver=letsencryptresolver"
+
 
 ###############################################################
 # MCP Memory
@@ -266,13 +241,6 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/maintainaar'
-
-  codeproject_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/codeprojectai'
 
   mcpmemory_data:
     driver: local
