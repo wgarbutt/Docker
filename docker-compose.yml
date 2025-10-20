@@ -2,28 +2,6 @@
 version: "3.4"
 services:
 ###############################################################
-# Postgres - Shared
-###############################################################
-  postgresql:
-    image: postgres:16.4-bullseye
-    container_name: postgres
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres}"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 5s
-    volumes:
-      - docker_postgres16:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: ${PG_PASS}
-    env_file:
-      - env.env
-    networks:
-      - reverse_proxy
-
-###############################################################
 # Dashy
 ###############################################################
 
