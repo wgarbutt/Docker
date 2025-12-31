@@ -2,28 +2,6 @@
 version: "3.4"
 services:
 ###############################################################
-# Postgres - Shared
-###############################################################
-  postgresql:
-    image: postgres:16.4-bullseye
-    container_name: postgres
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres}"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 5s
-    volumes:
-      - docker_postgres16:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: ${PG_PASS}
-    env_file:
-      - env.env
-    networks:
-      - reverse_proxy
-
-###############################################################
 # Dashy
 ###############################################################
 
@@ -51,8 +29,6 @@ services:
       - "traefik.http.routers.dashy.entrypoints=websecure"
       - "traefik.http.routers.dashy.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
-
-
 
 ###############################################################
 # Media Stack
@@ -206,138 +182,8 @@ services:
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.rule=Host(`${DOMAINNAME}`)
       - traefik.http.routers.traefik.service=api@internal
-      #- traefik.http.routers.traefik.middlewares=middlewares-authentik@docker
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
-      #- traefik.http.middlewares.middlewares-authentik.forwardAuth.address=http://172.26.0.100:9000/outpost.goauthentik.io/auth/traefik
-      #- traefik.http.middlewares.middlewares-authentik.forwardAuth.trustForwardHeader=true
-      #- traefik.http.middlewares.middlewares-authentik.forwardAuth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
 
-
-
-###############################################################
-# Duplicati
-###############################################################
-  duplicati:
-    image: lscr.io/linuxserver/duplicati:latest
-    container_name: duplicati
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=NZ
-      - CLI_ARGS= #optional
-      - DOCKER_MODS=linuxserver/mods:code-server-docker
-      - DUPLICATI__WEBSERVICE_PASSWORD=enter
-    volumes:
-      - duplicati_data:/config
-      - local_backup:/backups
-      - docker_data:/source
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
-    ports:
-      - 8200:8200
-    networks:
-      - reverse_proxy
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backup.tls=true"
-      - "traefik.http.routers.backup.entrypoints=websecure"
-      - "traefik.http.routers.backup.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.backup.rule=Host(`backup.willg.link`)"
-      
-###############################################################
-# UpTimeKuma
-###############################################################    
-  uptime-kuma:
-    image: louislam/uptime-kuma:1
-    container_name: uptime-kuma
-    volumes:
-      - uptimekuma_data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock 
-    ports:
-      - 3001:3001  
-    networks:
-      - reverse_proxy 
-    restart: always  
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.uptimekuma.tls=true"
-      - "traefik.http.routers.uptimekuma.entrypoints=websecure"
-      - "traefik.http.routers.uptimekuma.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.uptimekuma.rule=Host(`status.willg.link`)"
-
-###############################################################
-# Actual Budget
-###############################################################
-  actual-development:
-    container_name: Actual_Budget
-    image: docker.io/actualbudget/actual-server:latest
-
-    networks:
-      - reverse_proxy 
-    ports:
-      - '5006:5006'
-    volumes:
-      - actualbudget_data:/data
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.actualbudget.tls=true"
-      - "traefik.http.routers.actualbudget.entrypoints=websecure"
-      - "traefik.http.routers.actualbudget.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.actualbudget.rule=Host(`budget.willg.link`)"
-    
-
-###############################################################
-# Tandoor
-###############################################################
-  tandoor:
-    image: vabene1111/recipes
-    container_name: tandoor
-    restart: always
-    environment:
-      - DB_ENGINE=django.db.backends.postgresql
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=tandoor
-      - POSTGRES_USER=tandoor
-      - POSTGRES_PASSWORD=${TANDOOR_DB_PASSWORD}
-      - SECRET_KEY=${TANDOOR_SECRET_KEY}
-      - ALLOWED_HOSTS=*
-    volumes:
-      - tandoor_data:/opt/recipes/mediafiles
-      - tandoor_data:/opt/recipes/staticfiles
-    networks:
-      - reverse_proxy
-    depends_on:
-      - postgresql
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.tandoor.rule=Host(`recipes.willg.link`)"
-      - "traefik.http.routers.tandoor.entrypoints=websecure"
-      - "traefik.http.routers.tandoor.tls=true"
-      - "traefik.http.routers.tandoor.tls.certresolver=letsencryptresolver"
-
-
-###############################################################
-# MCP Memory
-###############################################################
-  mcpmemory:
-    image: mcpmemory_mcp-memory-server
-    container_name: MCPMemory
-    restart: always
-    volumes:
-      - mcpmemory_data:/app/data
-    networks:
-      - reverse_proxy
-    ports:
-      - '50880:50880'
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mcp.rule=Host(`mcp.willg.link`)"
-      - "traefik.http.routers.mcp.entrypoints=websecure"
-      - "traefik.http.routers.mcp.tls=true"
-      - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Maintainaar
@@ -367,19 +213,6 @@ services:
 #################################################################
 
 volumes:
-  frigate_config:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/frigate'
-
-  frigate_storage:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/mnt/recordings'
 
   maintainaar_config:
     driver: local
@@ -388,103 +221,12 @@ volumes:
       o: 'bind'
       device: '/container_data/maintainaar'
 
-  duplicati_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/duplicati'
-
-  authentik_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/authentik'
-
-  paperless_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/paperless/data'
-
-  paperless_media:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/paperless/media'
-
-  paperless_export:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/paperless/export'
-
-  paperless_consume:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/paperless/consume'
-
-  tandoor_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/tandoor'
-
-  mcpmemory_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/mcpmemory'
-
-  actualbudget_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/actualbudget'
-
-  uptimekuma_data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/uptimekuma'
-
-  local_backup:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/home/will/backup'
-
   docker_data:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
       device: '/container_data'
-
-  docker_postgres16:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/postgres16'
-
-  docker_authentikredis:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/authentik/redis'
 
   downloads:
     driver: local
@@ -535,22 +277,12 @@ volumes:
       o: 'bind'
       device: '/container_data/media/sabnzbd'
 
-  jenkins-data:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '/container_data/jenkins'
-
   portainer_data:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
       device: '/container_data/portainer'
-
-
-
 
 ###############################################################
 # Networks
