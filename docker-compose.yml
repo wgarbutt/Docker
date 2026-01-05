@@ -39,10 +39,10 @@ services:
     ports:
       - "13378:13378"
     volumes:
-      - audiobookshelf/config:/config
-      - audiobookshelf/metadata:/metadata
-      - audiobookshelf/audiobooks:/audiobooks
-      - audiobookshelf/podcasts:/podcasts
+      - audiobookshelfconfig:/config
+      - audiobookshelfmetadata:/metadata
+      - audiobookshelfaudiobooks:/audiobooks
+      - audiobookshelfpodcasts:/podcasts
     restart: unless-stopped
     labels:
     - "traefik.enable=true"
@@ -278,12 +278,33 @@ volumes:
       o: 'bind'
       device: '/container_data/minecraft'
 
-  audiobookshelf:
+  audiobookshelfconfig:
     driver: local
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/container_data/audiobookshelf'
+      device: '/container_data/audiobookshelf/config'
+
+  audiobookshelfmetadata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/audiobookshelf/metadata'
+
+  audiobookshelfaudiobooks:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/audiobookshelf/audiobooks'
+
+  audiobookshelfpodcasts:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/audiobookshelf/podcasts'
 
   docker_data:
     driver: local
