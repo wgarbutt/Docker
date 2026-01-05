@@ -29,6 +29,58 @@ services:
       - "traefik.http.routers.dashy.entrypoints=websecure"
       - "traefik.http.routers.dashy.tls.certresolver=letsencryptresolver"
       - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
+      
+###############################################################
+# AudioBookShelf
+###############################################################
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    ports:
+      - "13378:13378"
+    volumes:
+      - audiobookshelf/config:/config
+      - audiobookshelf/metadata:/metadata
+      - audiobookshelf/audiobooks:/audiobooks
+      - audiobookshelf/podcasts:/podcasts
+    restart: unless-stopped
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.audiobookshelf.tls=true"
+    - "traefik.http.routers.audiobookshelf.entrypoints=websecure"
+    - "traefik.http.routers.audiobookshelf.tls.certresolver=letsencryptresolver"
+    - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.willg.link`)"
+    - "traefik.http.routers.audiobookshelf.service=audiobookshelf-docker"
+    networks:
+      - reverse_proxy
+
+###############################################################
+# Minecraft
+###############################################################
+
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      MEMORY: "4G"
+      TYPE: "VANILLA"
+      VERSION: "LATEST"
+    volumes:
+      - minecraft:/data
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.minecraft.tls=true"
+    - "traefik.http.routers.minecraft.entrypoints=websecure"
+    - "traefik.http.routers.minecraft.tls.certresolver=letsencryptresolver"
+    - "traefik.http.routers.minecraft.rule=Host(`minecraft.willg.link`)"
+    - "traefik.http.routers.minecraft.service=minecraft-docker"
+
 
 ###############################################################
 # Media Stack
@@ -218,6 +270,20 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/maintainaar'
+
+  minecraft:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/minecraft'
+
+  audiobookshelf:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/audiobookshelf'
 
   docker_data:
     driver: local
