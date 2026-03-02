@@ -55,6 +55,27 @@ services:
       - reverse_proxy
 
 ###############################################################
+# Zigbee2mqtt
+###############################################################
+  zigbee2mqtt:
+      image: koenkk/zigbee2mqtt:latest
+      container_name: zigbee2mqtt
+      ports:
+        - "8080:8080"
+      volumes:
+        - zigbee2mqtt:/app/data
+      restart: unless-stopped
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.zigbee2mqtt.tls=true"
+      - "traefik.http.routers.zigbee2mqtt.entrypoints=websecure"
+      - "traefik.http.routers.zigbee2mqtt.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.willg.link`)"
+      - "traefik.http.routers.zigbee2mqtt.service=zigbee2mqtt-docker"
+      networks:
+        - reverse_proxy
+
+###############################################################
 # Minecraft
 ###############################################################
 
@@ -270,6 +291,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/maintainaar'
+
+    zigbee2mqtt:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/zigbee2mqtt'
 
   minecraft:
     driver: local
