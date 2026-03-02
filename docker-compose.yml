@@ -292,7 +292,7 @@ volumes:
       o: 'bind'
       device: '/container_data/maintainaar'
 
-    zigbee2mqtt:
+  zigbee2mqtt:
     driver: local
     driver_opts:
       type: 'none'
