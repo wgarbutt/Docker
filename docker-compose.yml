@@ -242,7 +242,7 @@ services:
       - reverse_proxy
     environment:
       - CF_API_EMAIL=${EMAIL}
-      - CF_API_KEY=${KEY}
+      - CF_DNS_API_TOKEN=${KEY}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro 
