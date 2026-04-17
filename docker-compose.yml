@@ -29,6 +29,79 @@ services:
       - "traefik.http.routers.dashy.entrypoints=websecure"
       - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
 
+
+###############################################################
+# Immich
+###############################################################
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:release
+    depends_on:
+      - immich-redis
+      - immich-database
+    environment:
+      - DB_HOSTNAME=immich-database
+      - DB_USERNAME=${DB_Username}
+      - DB_PASSWORD=${DB_Password}
+      - DB_DATABASE_NAME=immich
+      - REDIS_HOSTNAME=immich-redis
+    volumes:
+      - immich_library:/usr/src/app/upload
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.routers.immich.entrypoints=websecure"
+      - "traefik.http.routers.immich.rule=Host(`photos.willg.link`)"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+
+  immich-microservices:
+    container_name: immich_microservices
+    image: ghcr.io/immich-app/immich-server:release
+    command: ["start.sh", "microservices"]
+    depends_on:
+      - immich-redis
+      - immich-database
+    environment:
+      - DB_HOSTNAME=immich-database
+      - DB_USERNAME=${DB_Username}
+      - DB_PASSWORD=${DB_Password}
+      - DB_DATABASE_NAME=immich
+      - REDIS_HOSTNAME=immich-redis
+    volumes:
+      - immich_library:/usr/src/app/upload
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
+  immich-redis:
+    container_name: immich_redis
+    image: redis:7
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
+  immich-database:
+    container_name: immich_postgres
+    image: postgres:14
+    environment:
+      - POSTGRES_PASSWORD=${DB_Password}
+      - POSTGRES_DB=immich
+    volumes:
+      - immich_postgres:/var/lib/postgresql/data
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
 ###############################################################
 # AudioBookShelf
 ###############################################################
@@ -55,6 +128,7 @@ services:
 ###############################################################
 # Zigbee2mqtt
 ###############################################################
+
   zigbee2mqtt:
     image: koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
@@ -91,9 +165,7 @@ services:
     networks:
       - reverse_proxy
     restart: unless-stopped
-    # Note: Minecraft is a TCP game server, not HTTP — Traefik HTTP routing won't work for
-    # the actual game connection. Labels removed as they serve no purpose for game traffic.
-    # Access Minecraft directly via your server IP on port 25565.
+
 
 ###############################################################
 # Media Stack
@@ -389,6 +461,20 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/portainer'
+
+  immich_library:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/mnt/media/immich'
+
+  immich_postgres:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/immich/postgres'
 
 ###############################################################
 # Networks
