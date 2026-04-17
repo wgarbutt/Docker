@@ -105,6 +105,10 @@ services:
     networks:
       - reverse_proxy
     restart: unless-stopped
+    healthcheck:
+      interval: 5m
+      start_period: 30s
+      test: pg_isready --dbname='immich' --username=${DB_Username} || exit 1
 
 ###############################################################
 # AudioBookShelf
