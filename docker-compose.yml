@@ -471,7 +471,7 @@ volumes:
     driver_opts:
       type: 'none'
       o: 'bind'
-      device: '/mnt/media/immich'
+      device: '/mnt/photos'
 
   immich_postgres:
     driver: local
