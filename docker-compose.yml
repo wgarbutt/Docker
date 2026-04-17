@@ -57,6 +57,8 @@ services:
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.routers.immich.entrypoints=websecure"
       - "traefik.http.routers.immich.rule=Host(`photos.willg.link`)"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+      - "traefik.http.routers.immich.tls.certresolver=letsencryptresolver"
   
 
   immich-microservices:
