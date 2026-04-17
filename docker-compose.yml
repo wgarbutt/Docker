@@ -47,6 +47,8 @@ services:
       - REDIS_HOSTNAME=immich-redis
     volumes:
       - immich_library:/usr/src/app/upload
+    ports:
+      - 2283:2283
     networks:
       - reverse_proxy
     restart: unless-stopped
