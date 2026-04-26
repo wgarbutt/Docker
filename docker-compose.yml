@@ -27,6 +27,8 @@ services:
       - "traefik.http.routers.dashy.tls=true"
       - "traefik.http.routers.dashy.entrypoints=websecure"
       - "traefik.http.routers.dashy.rule=Host(`home.willg.link`)"
+      - "traefik.http.services.dashy.loadbalancer.server.port=8080"
+      - "traefik.http.routers.dashy.tls.certresolver=letsencryptresolver"
 
 
 ###############################################################
@@ -59,25 +61,6 @@ services:
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.tls.certresolver=letsencryptresolver"
   
-
-  immich-microservices:
-    container_name: immich_microservices
-    image: ghcr.io/immich-app/immich-server:release
-    command: ["start.sh", "microservices"]
-    depends_on:
-      - immich-redis
-      - immich-database
-    environment:
-      - DB_HOSTNAME=immich-database
-      - DB_USERNAME=${DB_Username}
-      - DB_PASSWORD=${DB_Password}
-      - DB_DATABASE_NAME=immich
-      - REDIS_HOSTNAME=immich-redis
-    volumes:
-      - immich_library:/usr/src/app/upload
-    networks:
-      - reverse_proxy
-    restart: unless-stopped
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -131,6 +114,7 @@ services:
       - "traefik.http.routers.audiobookshelf.entrypoints=websecure"
       - "traefik.http.routers.audiobookshelf.rule=Host(`audiobookshelf.willg.link`)"
       - "traefik.http.services.audiobookshelf.loadbalancer.server.port=13378"
+      - "traefik.http.routers.audiobookshelf.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Zigbee2mqtt
@@ -152,6 +136,7 @@ services:
       - "traefik.http.routers.zigbee2mqtt.entrypoints=websecure"
       - "traefik.http.routers.zigbee2mqtt.rule=Host(`zigbee2mqtt.willg.link`)"
       - "traefik.http.services.zigbee2mqtt.loadbalancer.server.port=8080"
+      - "traefik.http.routers.zigbee2mqtt.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Minecraft
@@ -187,12 +172,19 @@ services:
       - TZ=NZ
     volumes:
       - sabnzbdconfig:/config
-      - downloads:/downloads 
+      - downloads:/downloads
     ports:
       - 8079:8079
     networks:
       - reverse_proxy
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sabnzbd.tls=true"
+      - "traefik.http.routers.sabnzbd.entrypoints=websecure"
+      - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.willg.link`)"
+      - "traefik.http.services.sabnzbd.loadbalancer.server.port=8079"
+      - "traefik.http.routers.sabnzbd.tls.certresolver=letsencryptresolver"
 
   sonarr:
     container_name: sonarr
@@ -216,6 +208,7 @@ services:
       - "traefik.http.routers.sonarr.entrypoints=websecure"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.willg.link`)"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      - "traefik.http.routers.sonarr.tls.certresolver=letsencryptresolver"
 
   radarr:
     container_name: radarr
@@ -224,15 +217,22 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=NZ 
+      - TZ=NZ
     volumes:
-      - radarrconfig:/config 
-      - movies:/Movies 
-      - downloads:/downloads 
+      - radarrconfig:/config
+      - movies:/Movies
+      - downloads:/downloads
     ports:
       - 7878:7878
     networks:
       - reverse_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.tls=true"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.willg.link`)"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      - "traefik.http.routers.radarr.tls.certresolver=letsencryptresolver"
 
   plex:
     container_name: plex
@@ -241,23 +241,30 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=NZ 
+      - TZ=NZ
     volumes:
-      - plexconfig:/config 
-      - plexconfig:/transcode 
-      - tv:/tv 
-      - movies:/movies 
+      - plexconfig:/config
+      - plexconfig:/transcode
+      - tv:/tv
+      - movies:/movies
     ports:
-      - 32400:32400 
-      - 5353:5353/udp 
-      - 8324:8324 
-      - 32410:32410/udp 
-      - 32412:32412/udp 
-      - 32413:32413/udp 
-      - 32414:32414/udp 
+      - 32400:32400
+      - 5353:5353/udp
+      - 8324:8324
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
       - 32469:32469
     networks:
       - reverse_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.tls=true"
+      - "traefik.http.routers.plex.entrypoints=websecure"
+      - "traefik.http.routers.plex.rule=Host(`plex.willg.link`)"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      - "traefik.http.routers.plex.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Portainer
@@ -280,6 +287,7 @@ services:
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.rule=Host(`portainer.willg.link`)"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Traefik
@@ -328,6 +336,7 @@ services:
       - traefik.http.routers.traefik.rule=Host(`${DOMAINNAME}`)
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
 
 ###############################################################
 # Maintainerr
@@ -351,6 +360,7 @@ services:
       - "traefik.http.routers.maintainerr.entrypoints=websecure"
       - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.willg.link`)"
       - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+      - "traefik.http.routers.maintainerr.tls.certresolver=letsencryptresolver"
 
 ###############################################################
 # Volumes
