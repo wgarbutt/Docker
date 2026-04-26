@@ -11,7 +11,7 @@ jobs:
       - name: YAML Lint
         uses: ibiqlik/action-yamllint@v3
         with:
-          file_or_dir: .github/workflows/
+          file_or_dir: .
           config_data: |
             extends: default
             rules:

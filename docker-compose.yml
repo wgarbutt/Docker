@@ -65,6 +65,8 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release
+    volumes:
+      - immich_model_cache:/cache
     networks:
       - reverse_proxy
     restart: unless-stopped
@@ -80,6 +82,7 @@ services:
     container_name: immich_postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
     environment:
+      - POSTGRES_USER=${DB_Username}
       - POSTGRES_PASSWORD=${DB_Password}
       - POSTGRES_DB=immich
     volumes:
@@ -492,6 +495,13 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/container_data/immich/postgres'
+
+  immich_model_cache:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/immich/model-cache'
 
 ###############################################################
 # Networks
