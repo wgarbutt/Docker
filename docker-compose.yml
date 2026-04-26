@@ -12,7 +12,7 @@ services:
     ports:
       - 8090:8080
     networks:
-      - reverse_proxy    
+      - reverse_proxy
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -60,7 +60,7 @@ services:
       - "traefik.http.routers.immich.rule=Host(`photos.willg.link`)"
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.tls.certresolver=letsencryptresolver"
-  
+
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -196,11 +196,11 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=NZ 
+      - TZ=NZ
     volumes:
-      - sonarrconfig:/config 
-      - tv:/TV 
-      - downloads:/downloads 
+      - sonarrconfig:/config
+      - tv:/TV
+      - downloads:/downloads
     ports:
       - 8989:8989
     networks:
@@ -279,7 +279,7 @@ services:
       - "9443:9443"
       - "9000:9000"
     networks:
-      - reverse_proxy    
+      - reverse_proxy
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "portainer_data:/data"
@@ -309,7 +309,7 @@ services:
       - --entrypoints.websecure.http.tls.domains[0].main=${DOMAINNAME}
       - --entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAINNAME}
       - --providers.docker=true
-      - --providers.docker.exposedByDefault=false 
+      - --providers.docker.exposedByDefault=false
       - --certificatesresolvers.letsencryptresolver.acme.dnschallenge=true
       - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.provider=cloudflare
       - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
@@ -329,8 +329,8 @@ services:
       - CF_ZONE_ID=${ZONEID}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro 
-      - ${TRAEFIK_DIR}/acme.json:/acme.json 
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${TRAEFIK_DIR}/acme.json:/acme.json
       - /container_data/traefik/dynamic.yml:/dynamic.yml:ro
     labels:
       - traefik.enable=true
@@ -345,7 +345,7 @@ services:
 # Maintainerr
 ###############################################################
   maintainerr:
-    image: ghcr.io/jorenn92/maintainerr:latest 
+    image: ghcr.io/jorenn92/maintainerr:latest
     container_name: maintainerr
     user: 1000:1000
     volumes:
@@ -446,7 +446,7 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '/mnt/media/Movies'
-  
+
   plexconfig:
     driver: local
     driver_opts:
