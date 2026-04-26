@@ -1,5 +1,4 @@
 ---
-version: "3.4"
 services:
 ###############################################################
 # Dashy
@@ -16,7 +15,7 @@ services:
       - reverse_proxy    
     environment:
       - NODE_ENV=production
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ['CMD', 'node', '/app/services/healthcheck']
       interval: 1m30s
@@ -193,12 +192,12 @@ services:
       - 8079:8079
     networks:
       - reverse_proxy
-    restart: always
+    restart: unless-stopped
 
   sonarr:
     container_name: sonarr
     image: linuxserver/sonarr:latest
-    restart: always
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -221,7 +220,7 @@ services:
   radarr:
     container_name: radarr
     image: linuxserver/radarr:latest
-    restart: always
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -238,7 +237,7 @@ services:
   plex:
     container_name: plex
     image: plexinc/pms-docker:latest
-    restart: always
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -274,7 +273,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "portainer_data:/data"
-    restart: always
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portainer.tls=true"
@@ -289,7 +288,7 @@ services:
   traefik:
     container_name: traefik
     image: traefik:latest
-    restart: always
+    restart: unless-stopped
     command:
       - --entrypoints.web.address=:80
       - --api
@@ -338,7 +337,7 @@ services:
     container_name: maintainerr
     user: 1000:1000
     volumes:
-      - maintainaar_config:/opt/data
+      - maintainerr_config:/opt/data
     environment:
       - TZ=NZ
     networks:
@@ -350,7 +349,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.maintainerr.tls=true"
       - "traefik.http.routers.maintainerr.entrypoints=websecure"
-      - "traefik.http.routers.maintainerr.rule=Host(`maintainaar.willg.link`)"
+      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.willg.link`)"
       - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
 
 ###############################################################
@@ -358,7 +357,7 @@ services:
 ###############################################################
 
 volumes:
-  maintainaar_config:
+  maintainerr_config:
     driver: local
     driver_opts:
       type: 'none'
