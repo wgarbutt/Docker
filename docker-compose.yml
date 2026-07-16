@@ -342,6 +342,24 @@ services:
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
 
 ###############################################################
+# Actual Budget
+###############################################################
+  actualbudget:
+    image: actualbudget/actual-server:latest
+    container_name: actualbudget
+    volumes:
+      - actualbudget_data:/data
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actualbudget.tls=true"
+      - "traefik.http.routers.actualbudget.entrypoints=websecure"
+      - "traefik.http.routers.actualbudget.rule=Host(`budget.willg.link`)"
+      - "traefik.http.services.actualbudget.loadbalancer.server.port=5006"
+
+###############################################################
 # Maintainerr
 ###############################################################
   maintainerr:
@@ -370,6 +388,13 @@ services:
 ###############################################################
 
 volumes:
+  actualbudget_data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/container_data/actualbudget'
+
   maintainerr_config:
     driver: local
     driver_opts:
