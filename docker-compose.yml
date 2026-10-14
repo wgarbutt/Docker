@@ -312,8 +312,13 @@ services:
       - --providers.docker.exposedByDefault=false
       - --certificatesresolvers.letsencryptresolver.acme.dnschallenge=true
       - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.provider=cloudflare
-      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
-      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.delayBeforeCheck=30
+      # dns-doh forwards these lookups over DNS-over-HTTPS: the UniFi gateway
+      # intercepts all port-53 DNS and breaks lego's Cloudflare zone detection.
+      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.resolvers=dns-doh:53
+      # Propagation pre-check also queries Cloudflare's nameservers on port 53
+      # (intercepted by UniFi), so skip it and just wait 30s - Cloudflare is fast.
+      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.propagation.disableChecks=true
+      - --certificatesresolvers.letsencryptresolver.acme.dnschallenge.propagation.delayBeforeChecks=30s
       - --certificatesresolvers.letsencryptresolver.acme.email=${EMAIL}
       - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
       - --log.level=info
@@ -340,6 +345,18 @@ services:
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.tls=true
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
+
+  dns-doh:
+    container_name: dns-doh
+    image: adguard/dnsproxy:v0.86.0
+    restart: unless-stopped
+    command:
+      - --listen=0.0.0.0
+      - --port=53
+      - --upstream=https://1.1.1.1/dns-query
+      - --upstream=https://1.0.0.1/dns-query
+    networks:
+      - reverse_proxy
 
 ###############################################################
 # Actual Budget
