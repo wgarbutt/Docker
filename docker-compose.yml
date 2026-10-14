@@ -9,8 +9,6 @@ services:
     container_name: dashy
     volumes:
       - /container_data/dashy/dashy-conf.yml:/app/user-data/conf.yml
-    ports:
-      - 8090:8080
     networks:
       - reverse_proxy
     environment:
@@ -48,8 +46,6 @@ services:
       - REDIS_HOSTNAME=immich-redis
     volumes:
       - immich_library:/usr/src/app/upload
-    ports:
-      - 2283:2283
     networks:
       - reverse_proxy
     restart: unless-stopped
@@ -60,6 +56,7 @@ services:
       - "traefik.http.routers.immich.rule=Host(`photos.willg.link`)"
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.tls.certresolver=letsencryptresolver"
+      - "com.centurylinklabs.watchtower.enable=false"
 
 
   immich-machine-learning:
@@ -70,6 +67,8 @@ services:
     networks:
       - reverse_proxy
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
 
   immich-redis:
     container_name: immich_redis
@@ -77,6 +76,8 @@ services:
     networks:
       - reverse_proxy
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
 
   immich-database:
     container_name: immich_postgres
@@ -90,6 +91,8 @@ services:
     networks:
       - reverse_proxy
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     healthcheck:
       interval: 5m
       start_period: 30s
@@ -101,8 +104,8 @@ services:
   audiobookshelf:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
-    ports:
-      - "13378:13378"
+    environment:
+      - PORT=13378
     volumes:
       - audiobookshelfconfig:/config
       - audiobookshelfmetadata:/metadata
@@ -277,7 +280,6 @@ services:
     container_name: portainer
     ports:
       - "9443:9443"
-      - "9000:9000"
     networks:
       - reverse_proxy
     volumes:
@@ -389,8 +391,6 @@ services:
       - TZ=NZ
     networks:
       - reverse_proxy
-    ports:
-      - 6246:6246
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
